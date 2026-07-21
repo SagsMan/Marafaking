@@ -45,22 +45,18 @@ const WheelSegment: React.FC<WheelSegmentProps> = ({
   return (
     <G>
       <Path d={segment.pathData} fill={fillColor} stroke="#C2ABC0" />
-      <G
-        x={segment.centroid[0]}
-        y={segment.centroid[1]}
-        transform={`rotate(${segment.rotationAngle})`}
-      >
-        <Rect x={-20} y={-12} width={50} height={30} rx={5} ry={5} fill="#F4CB79" />
+      {/* No rotation — keep all labels horizontal and readable */}
+      <G x={segment.centroid[0]} y={segment.centroid[1]}>
+        <Rect x={-26} y={-14} width={52} height={28} rx={6} ry={6} fill="#F4CB79" />
         <SText
-          fontSize={14}
-          x={-3}
-          y={3.5}
+          fontSize={13}
+          x={0}
+          y={4}
           fontWeight="bold"
           textAnchor="middle"
-          alignmentBaseline="central"
           fill="#fff"
         >
-          X {segment.amount}
+          X{segment.amount}
         </SText>
       </G>
     </G>
