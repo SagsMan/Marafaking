@@ -1,10 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
 import Svg, { Circle, Defs, G, LinearGradient, Path, Stop, Text as SText } from 'react-native-svg';
-import Animated, { useAnimatedProps, SharedValue } from 'react-native-reanimated';
+import { runOnJS, useAnimatedReaction, SharedValue } from 'react-native-reanimated';
 import { generateBowShape, generateDaggerShape, SCREEN_WIDTH } from '@/utils/Path';
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const bowPath = generateBowShape();
 const daggerPath = generateDaggerShape();
 
@@ -14,9 +13,14 @@ type SpinControlProps = {
 };
 
 const SpinControl: React.FC<SpinControlProps> = ({ onSpin, animatedCircleY }) => {
-  const animatedCircleProps = useAnimatedProps(() => ({
-    cy: animatedCircleY.value,
-  }));
+  const [circleY, setCircleY] = useState(animatedCircleY.value);
+
+  useAnimatedReaction(
+    () => animatedCircleY.value,
+    (value) => {
+      runOnJS(setCircleY)(value);
+    }
+  );
 
   return (
     <Svg width={SCREEN_WIDTH} height={180} style={styles.outerSvg}>
@@ -30,10 +34,10 @@ const SpinControl: React.FC<SpinControlProps> = ({ onSpin, animatedCircleY }) =>
       <G>
         <Path d={daggerPath} stroke="#F4CB79" strokeWidth={6} fill="#F4CB79" />
         <Circle cx={SCREEN_WIDTH / 2} cy="124" r="55" fill="#B8783C" />
-        <AnimatedCircle
+        <Circle
           onPress={onSpin}
           cx={SCREEN_WIDTH / 2}
-          animatedProps={animatedCircleProps}
+          cy={circleY}
           r="55"
           fill="#FCE2A7"
         />

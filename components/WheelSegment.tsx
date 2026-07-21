@@ -1,12 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { G, Path, Rect, Text as SText } from 'react-native-svg';
-import Animated, {
+import {
   interpolateColor,
-  useAnimatedProps,
+  runOnJS,
+  useAnimatedReaction,
   SharedValue,
 } from 'react-native-reanimated';
-
-const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 type SegmentData = {
   pathData: string;
@@ -28,16 +27,24 @@ const WheelSegment: React.FC<WheelSegmentProps> = ({
   colorProgress,
   index,
 }) => {
-  const segmentProps = useAnimatedProps(() => ({
-    fill:
-      index === selectedSegmentAnimatedIndex.value
-        ? interpolateColor(colorProgress.value, [0, 1], ['#AF93EA', '#AF93EA'])
-        : interpolateColor(colorProgress.value, [0, 1], ['#AF93EA', '#724cbd']),
-  }));
+  const [fillColor, setFillColor] = useState('#AF93EA');
+
+  useAnimatedReaction(
+    () => ({
+      isSelected: selectedSegmentAnimatedIndex.value === index,
+      progress: colorProgress.value,
+    }),
+    ({ isSelected, progress }) => {
+      const color = isSelected
+        ? '#AF93EA'
+        : (interpolateColor(progress, [0, 1], ['#AF93EA', '#724cbd']) as string);
+      runOnJS(setFillColor)(color);
+    }
+  );
 
   return (
     <G>
-      <AnimatedPath d={segment.pathData} animatedProps={segmentProps} stroke="#C2ABC0" />
+      <Path d={segment.pathData} fill={fillColor} stroke="#C2ABC0" />
       <G
         x={segment.centroid[0]}
         y={segment.centroid[1]}

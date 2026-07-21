@@ -14,8 +14,6 @@ import { generateWheelSegments, SCREEN_WIDTH } from '@/utils/Path';
 import SpinControl from './SpinControl';
 import WheelSegment from './WheelSegment';
 
-const AnimatedSvg = Animated.createAnimatedComponent(Svg);
-
 type WheelProps = {
   segments: number[];
   onEnd: (value: number) => void;
@@ -62,7 +60,7 @@ const Wheel: React.FC<WheelProps> = ({ segments, onEnd, onSpin }) => {
     onSpin();
   };
 
-  const animatedSvgStyle = useAnimatedStyle(() => ({
+  const animatedWheelStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotation.value}deg` }],
   }));
 
@@ -71,19 +69,22 @@ const Wheel: React.FC<WheelProps> = ({ segments, onEnd, onSpin }) => {
   return (
     <View style={styles.container}>
       <SpinControl animatedCircleY={animatedCircleY} onSpin={spinWheel} />
-      <AnimatedSvg width={SCREEN_WIDTH} height={SCREEN_WIDTH} style={animatedSvgStyle}>
-        <G x={SCREEN_WIDTH / 2} y={SCREEN_WIDTH / 2}>
-          {segmentData.map((segmentItem, index) => (
-            <WheelSegment
-              key={index}
-              index={index}
-              colorProgress={colorProgress}
-              segment={segmentItem}
-              selectedSegmentAnimatedIndex={selectedSegmentAnimatedIndex}
-            />
-          ))}
-        </G>
-      </AnimatedSvg>
+      {/* Use Animated.View for rotation so reanimated never calls setNativeProps on SVG */}
+      <Animated.View style={animatedWheelStyle}>
+        <Svg width={SCREEN_WIDTH} height={SCREEN_WIDTH}>
+          <G x={SCREEN_WIDTH / 2} y={SCREEN_WIDTH / 2}>
+            {segmentData.map((segmentItem, index) => (
+              <WheelSegment
+                key={index}
+                index={index}
+                colorProgress={colorProgress}
+                segment={segmentItem}
+                selectedSegmentAnimatedIndex={selectedSegmentAnimatedIndex}
+              />
+            ))}
+          </G>
+        </Svg>
+      </Animated.View>
     </View>
   );
 };
