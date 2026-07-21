@@ -1,16 +1,21 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SCREEN_WIDTH } from '@/utils/Path';
 
-const Header = () => {
+type HeaderProps = {
+  onClose?: () => void;
+};
+
+const Header: React.FC<HeaderProps> = ({ onClose }) => {
   return (
     <>
       <View style={styles.topBar}>
-        <View style={styles.closeButton}>
-          <MaterialCommunityIcons name="close" size={26} color="white" />
-        </View>
+        <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
+          <Text style={styles.closeIcon}>✕</Text>
+        </TouchableOpacity>
         <Text style={styles.topBarText}>Spin And Win!</Text>
+        {/* Spacer to keep title centred */}
+        <View style={styles.spacer} />
       </View>
       <View style={styles.divider} />
     </>
@@ -22,23 +27,33 @@ export default Header;
 const styles = StyleSheet.create({
   topBar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: SCREEN_WIDTH / 1.4,
-    alignSelf: 'flex-start',
     alignItems: 'center',
-    paddingBottom: 20,
+    justifyContent: 'space-between',
+    width: SCREEN_WIDTH,
     paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   closeButton: {
-    padding: 8,
+    width: 40,
+    height: 40,
     backgroundColor: '#454D77',
-    borderRadius: 14,
-    paddingBottom: 10,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeIcon: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    lineHeight: 22,
   },
   topBarText: {
     color: 'white',
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  spacer: {
+    width: 40,
   },
   divider: {
     backgroundColor: '#424677',
