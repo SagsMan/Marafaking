@@ -1,42 +1,62 @@
-import React from 'react';
-import { StyleSheet, Text, View, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, BackHandler, Platform, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, {
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
 import Header from '@/components/Header';
 import Wheel from '@/components/Wheel';
-import PrizeCard from '@/components/PrizeCard';
+import PrizeModal from '@/components/PrizeModal';
 import type { Prize } from '@/utils/Path';
 
 // ── Prize pool — purely fictional in-game gifts ──────────────────────────────
 const PRIZES: Prize[] = [
   { emoji: '🎁', name: 'Mystery Box' },
-  { emoji: '👟', name: 'Sneakers'   },
-  { emoji: '🎮', name: 'GamePad'    },
-  { emoji: '🍕', name: 'Free Pizza' },
-  { emoji: '🎧', name: 'Headset'    },
-  { emoji: '🍀', name: 'Lucky Box'  },
+  { emoji: '👟', name: 'Sneakers'    },
+  { emoji: '🎮', name: 'GamePad'     },
+  { emoji: '🍕', name: 'Free Pizza'  },
+  { emoji: '🎧', name: 'Headset'     },
+  { emoji: '🍀', name: 'Lucky Box'   },
 ];
 
 export default function SpinAndWin() {
   const insets = useSafeAreaInsets();
-  const prizeOpacity = useSharedValue(0);
-  const prizeEmoji = useSharedValue('🎁');
-  const prizeName  = useSharedValue('');
+
+  // wonPrize drives the modal — null = hidden, Prize = visible
+  const [wonPrize, setWonPrize]     = useState<Prize | null>(null);
+  const [isSpinning, setIsSpinning] = useState(false);
 
   const handleWheelEnd = (index: number) => {
-    const won = PRIZES[index];
-    prizeEmoji.value = won.emoji;
-    prizeName.value  = won.name;
-    prizeOpacity.value = withTiming(1, { duration: 800 });
+    setIsSpinning(false);
+    setWonPrize(PRIZES[index]);
   };
 
   const handleOnSpin = () => {
-    prizeOpacity.value = 0;
-    prizeName.value    = '';
+    setIsSpinning(true);
+    setWonPrize(null);
+  };
+
+  const handlePlayAgain = () => {
+    setWonPrize(null);
+  };
+
+  const handleClose = () => {
+    Alert.alert(
+      'Quit Game',
+      'Are you sure you want to exit?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Exit',
+          style: 'destructive',
+          onPress: () => {
+            if (Platform.OS === 'android') {
+              BackHandler.exitApp();
+            }
+            // on iOS there is no programmatic exit — the button still gives feedback
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const topPadding = Platform.OS === 'web' ? 60 : insets.top;
@@ -48,7 +68,8 @@ export default function SpinAndWin() {
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
     >
-      <Header />
+      {/* Header with working X button */}
+      <Header onClose={handleClose} />
 
       {/* Brand logo */}
       <View style={styles.brandWrapper}>
@@ -58,14 +79,10 @@ export default function SpinAndWin() {
 
       <Text style={styles.tagline}>🎮 Spin the Wheel · Win a Gift!</Text>
 
-      {/* Prize reveal card */}
-      <PrizeCard
-        opacity={prizeOpacity}
-        prizeEmoji={prizeEmoji}
-        prizeName={prizeName}
-      />
-
       <Wheel prizes={PRIZES} onEnd={handleWheelEnd} onSpin={handleOnSpin} />
+
+      {/* Prize claim modal — appears after wheel stops */}
+      <PrizeModal prize={wonPrize} onPlayAgain={handlePlayAgain} />
     </LinearGradient>
   );
 }
