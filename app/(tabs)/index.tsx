@@ -1,13 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert, BackHandler, Platform, StyleSheet, Text, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Header from '@/components/Header';
 import Wheel from '@/components/Wheel';
 import PrizeModal from '@/components/PrizeModal';
+import GiftCounter from '@/components/GiftCounter';
 import type { Prize } from '@/utils/Path';
 
-// ── Prize pool — purely fictional in-game gifts ──────────────────────────────
+const GIFT_COUNT_KEY = '@marafaking_gift_count';
+
+// ── Prize pool — purely fictional in-game virtual prizes ─────────────────────
 const PRIZES: Prize[] = [
   { emoji: '🎁', name: 'Mystery Box' },
   { emoji: '👟', name: 'Sneakers'    },
@@ -20,21 +24,29 @@ const PRIZES: Prize[] = [
 export default function SpinAndWin() {
   const insets = useSafeAreaInsets();
 
-  // wonPrize drives the modal — null = hidden, Prize = visible
   const [wonPrize, setWonPrize]     = useState<Prize | null>(null);
-  const [isSpinning, setIsSpinning] = useState(false);
+  const [giftCount, setGiftCount]   = useState(0);
+
+  // Load persisted count on mount
+  useEffect(() => {
+    AsyncStorage.getItem(GIFT_COUNT_KEY).then((val) => {
+      if (val !== null) setGiftCount(parseInt(val, 10) || 0);
+    });
+  }, []);
 
   const handleWheelEnd = (index: number) => {
-    setIsSpinning(false);
     setWonPrize(PRIZES[index]);
   };
 
   const handleOnSpin = () => {
-    setIsSpinning(true);
     setWonPrize(null);
   };
 
-  const handlePlayAgain = () => {
+  const handlePlayAgain = async () => {
+    // Increment and persist gift count when player claims
+    const next = giftCount + 1;
+    setGiftCount(next);
+    await AsyncStorage.setItem(GIFT_COUNT_KEY, String(next));
     setWonPrize(null);
   };
 
@@ -48,10 +60,7 @@ export default function SpinAndWin() {
           text: 'Exit',
           style: 'destructive',
           onPress: () => {
-            if (Platform.OS === 'android') {
-              BackHandler.exitApp();
-            }
-            // on iOS there is no programmatic exit — the button still gives feedback
+            if (Platform.OS === 'android') BackHandler.exitApp();
           },
         },
       ],
@@ -68,7 +77,6 @@ export default function SpinAndWin() {
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
     >
-      {/* Header with working X button */}
       <Header onClose={handleClose} />
 
       {/* Brand logo */}
@@ -77,11 +85,14 @@ export default function SpinAndWin() {
         <Text style={styles.brandText}>MARAFAKING</Text>
       </View>
 
-      <Text style={styles.tagline}>🎮 Spin the Wheel · Win a Gift!</Text>
+      <Text style={styles.tagline}>🎮 Spin · Collect Virtual Prizes!</Text>
+
+      {/* Persistent gift counter */}
+      <GiftCounter count={giftCount} />
 
       <Wheel prizes={PRIZES} onEnd={handleWheelEnd} onSpin={handleOnSpin} />
 
-      {/* Prize claim modal — appears after wheel stops */}
+      {/* Prize claim modal */}
       <PrizeModal prize={wonPrize} onPlayAgain={handlePlayAgain} />
     </LinearGradient>
   );
@@ -121,7 +132,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.65)',
     fontSize: 13,
     marginTop: 4,
-    marginBottom: 6,
+    marginBottom: 2,
     letterSpacing: 0.5,
   },
 });

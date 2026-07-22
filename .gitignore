@@ -39,3 +39,9 @@ yarn-error.*
 .vercel
 
 .env
+
+# Replit internal — not part of the app
+.replit-artifact/
+scripts/
+server/
+expo-env.d.ts

@@ -90,7 +90,7 @@ export default function PrizeModal({ prize, onPlayAgain }: Props) {
 
             {/* Header */}
             <Text style={styles.title}>🎉 You Won!</Text>
-            <Text style={styles.subtitle}>Your prize has been claimed</Text>
+            <Text style={styles.subtitle}>Virtual in-game prize unlocked</Text>
 
             {/* Prize emoji with animated glow shadow */}
             <RNAnimated.Text
@@ -109,7 +109,7 @@ export default function PrizeModal({ prize, onPlayAgain }: Props) {
 
             {/* Claim message */}
             <Text style={styles.claimMsg}>
-              🎁 Gift claimed! Come back and{'\n'}spin again for more prizes.
+              🎮 Virtual prize collected!{'\n'}Spin again to win more in-game gifts.
             </Text>
 
             {/* Divider */}
