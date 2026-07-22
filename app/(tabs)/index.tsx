@@ -1,39 +1,43 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
-  useDerivedValue,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
 import Header from '@/components/Header';
 import Wheel from '@/components/Wheel';
-import WalletView from '@/components/WalletView';
+import PrizeCard from '@/components/PrizeCard';
+import type { Prize } from '@/utils/Path';
 
-const segments = [5, 2, 4, 3, 1.3, 1.5];
-const initialScore = 100; // starting points
+// ── Prize pool — purely fictional in-game gifts ──────────────────────────────
+const PRIZES: Prize[] = [
+  { emoji: '🎁', name: 'Mystery Box' },
+  { emoji: '👟', name: 'Sneakers'   },
+  { emoji: '🎮', name: 'GamePad'    },
+  { emoji: '🍕', name: 'Free Pizza' },
+  { emoji: '🎧', name: 'Headset'    },
+  { emoji: '🍀', name: 'Lucky Box'  },
+];
 
 export default function SpinAndWin() {
   const insets = useSafeAreaInsets();
-  const labelOpacity = useSharedValue(0);
-  const [multiplierLabel, setMultiplierLabel] = useState('');
-  const score = useSharedValue(initialScore);
+  const prizeOpacity = useSharedValue(0);
+  const prizeEmoji = useSharedValue('🎁');
+  const prizeName  = useSharedValue('');
 
-  const handleWheelEnd = (multiplier: number) => {
-    const earned = Math.round(initialScore * multiplier);
-    setMultiplierLabel(`×${multiplier}  →  ${earned} pts`);
-    labelOpacity.value = withTiming(1, { duration: 800 });
-    score.value = withTiming(earned, { duration: 800 });
+  const handleWheelEnd = (index: number) => {
+    const won = PRIZES[index];
+    prizeEmoji.value = won.emoji;
+    prizeName.value  = won.name;
+    prizeOpacity.value = withTiming(1, { duration: 800 });
   };
 
   const handleOnSpin = () => {
-    score.value = initialScore;
-    setMultiplierLabel('');
-    labelOpacity.value = 0;
+    prizeOpacity.value = 0;
+    prizeName.value    = '';
   };
-
-  const scoreText = useDerivedValue(() => `${Math.round(score.value)}`);
 
   const topPadding = Platform.OS === 'web' ? 60 : insets.top;
 
@@ -46,28 +50,22 @@ export default function SpinAndWin() {
     >
       <Header />
 
-      {/* Marafaking brand logo */}
+      {/* Brand logo */}
       <View style={styles.brandWrapper}>
         <Text style={styles.brandGlow}>MARAFAKING</Text>
         <Text style={styles.brandText}>MARAFAKING</Text>
       </View>
 
-      <Text style={styles.tagline}>🎮 Spin the Wheel · Win Points!</Text>
+      <Text style={styles.tagline}>🎮 Spin the Wheel · Win a Gift!</Text>
 
-      <WalletView
-        opacity={labelOpacity}
-        scoreText={scoreText}
-        multiplierLabel={multiplierLabel}
+      {/* Prize reveal card */}
+      <PrizeCard
+        opacity={prizeOpacity}
+        prizeEmoji={prizeEmoji}
+        prizeName={prizeName}
       />
 
-      <Wheel segments={segments} onEnd={handleWheelEnd} onSpin={handleOnSpin} />
-
-      {/* Game disclaimer — keeps it clearly a game for Play Store */}
-      <View style={styles.disclaimerWrapper}>
-        <Text style={styles.disclaimerText}>
-          🎮 FOR ENTERTAINMENT ONLY · No real money · Virtual points only
-        </Text>
-      </View>
+      <Wheel prizes={PRIZES} onEnd={handleWheelEnd} onSpin={handleOnSpin} />
     </LinearGradient>
   );
 }
@@ -82,7 +80,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Glow layer — same text underneath, blurred gold colour
   brandGlow: {
     position: 'absolute',
     color: '#FFD700',
@@ -94,7 +91,6 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 0 },
     opacity: 0.7,
   },
-  // Sharp top layer
   brandText: {
     color: '#FFE680',
     fontSize: 28,
@@ -108,20 +104,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.65)',
     fontSize: 13,
     marginTop: 4,
-    marginBottom: 12,
+    marginBottom: 6,
     letterSpacing: 0.5,
-  },
-  disclaimerWrapper: {
-    position: 'absolute',
-    bottom: 12,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  disclaimerText: {
-    color: 'rgba(255,255,255,0.35)',
-    fontSize: 10,
-    textAlign: 'center',
-    letterSpacing: 0.3,
   },
 });

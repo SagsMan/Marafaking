@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { G, Path, Rect, Text as SText } from 'react-native-svg';
+import { G, Path, Text as SText } from 'react-native-svg';
 import {
   interpolateColor,
   runOnJS,
   useAnimatedReaction,
   SharedValue,
 } from 'react-native-reanimated';
+import type { Prize } from '@/utils/Path';
 
-type SegmentData = {
+export type SegmentData = {
   pathData: string;
   centroid: [number, number];
   rotationAngle: number;
-  amount: number;
+  prize: Prize;
 };
 
 type WheelSegmentProps = {
@@ -36,27 +37,38 @@ const WheelSegment: React.FC<WheelSegmentProps> = ({
     }),
     ({ isSelected, progress }) => {
       const color = isSelected
-        ? '#AF93EA'
-        : (interpolateColor(progress, [0, 1], ['#AF93EA', '#724cbd']) as string);
+        ? '#C4A8F5'
+        : (interpolateColor(progress, [0, 1], ['#AF93EA', '#6B3FA8']) as string);
       runOnJS(setFillColor)(color);
     }
   );
 
   return (
     <G>
-      <Path d={segment.pathData} fill={fillColor} stroke="#C2ABC0" />
-      {/* No rotation — keep all labels horizontal and readable */}
+      <Path d={segment.pathData} fill={fillColor} stroke="#C2ABC0" strokeWidth={1.5} />
+      {/* Emoji label — no badge background, just the emoji + short name */}
       <G x={segment.centroid[0]} y={segment.centroid[1]}>
-        <Rect x={-26} y={-14} width={52} height={28} rx={6} ry={6} fill="#F4CB79" />
+        {/* Emoji */}
         <SText
-          fontSize={13}
+          fontSize={26}
           x={0}
-          y={4}
-          fontWeight="bold"
+          y={-4}
           textAnchor="middle"
-          fill="#fff"
+          alignmentBaseline="central"
         >
-          X{segment.amount}
+          {segment.prize.emoji}
+        </SText>
+        {/* Prize name */}
+        <SText
+          fontSize={9}
+          x={0}
+          y={16}
+          textAnchor="middle"
+          alignmentBaseline="central"
+          fill="#fff"
+          fontWeight="bold"
+        >
+          {segment.prize.name}
         </SText>
       </G>
     </G>

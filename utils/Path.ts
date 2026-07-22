@@ -3,6 +3,11 @@ import { line, arc as d3Arc } from 'd3-shape';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+export type Prize = {
+  emoji: string;
+  name: string;
+};
+
 const generateBowShape = () => {
   const radius = SCREEN_WIDTH / 6;
   const angleRange = (Math.PI * 2) / 3;
@@ -46,7 +51,8 @@ const generateDaggerShape = () => {
   return lineGenerator(points) + 'Z';
 };
 
-const generateWheelSegments = (segments: number[]) => {
+const generateWheelSegments = (prizes: Prize[]) => {
+  const count = prizes.length;
   const wheelSize = SCREEN_WIDTH - 50;
   const radius = wheelSize / 2;
   const cornerRadius = 5;
@@ -55,19 +61,19 @@ const generateWheelSegments = (segments: number[]) => {
     .outerRadius(radius)
     .cornerRadius(cornerRadius);
   const segmentSpacing = 0.04;
-  const angleOffset = -Math.PI / segments.length;
+  const angleOffset = -Math.PI / count;
 
-  return segments.map((amount, index) => {
+  return prizes.map((prize, index) => {
     const startAngle =
-      (2 * Math.PI * index) / segments.length + segmentSpacing / 2 + angleOffset;
+      (2 * Math.PI * index) / count + segmentSpacing / 2 + angleOffset;
     const endAngle =
-      (2 * Math.PI * (index + 1)) / segments.length - segmentSpacing / 2 + angleOffset;
+      (2 * Math.PI * (index + 1)) / count - segmentSpacing / 2 + angleOffset;
 
     const rotationAngle = ((startAngle + endAngle) / 2) * (180 / Math.PI);
     const pathData = arc({ startAngle, endAngle } as any)!;
     const centroid = arc.centroid({ startAngle, endAngle } as any);
 
-    return { pathData, centroid, rotationAngle, amount };
+    return { pathData, centroid, rotationAngle, prize };
   });
 };
 

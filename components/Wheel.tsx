@@ -8,35 +8,34 @@ import Animated, {
   useSharedValue,
   withSequence,
   withTiming,
-  SharedValue,
 } from 'react-native-reanimated';
-import { generateWheelSegments, SCREEN_WIDTH } from '@/utils/Path';
+import { generateWheelSegments, SCREEN_WIDTH, type Prize } from '@/utils/Path';
 import SpinControl from './SpinControl';
 import WheelSegment from './WheelSegment';
 
 type WheelProps = {
-  segments: number[];
-  onEnd: (value: number) => void;
+  prizes: Prize[];
+  onEnd: (index: number) => void;
   onSpin: () => void;
 };
 
-const Wheel: React.FC<WheelProps> = ({ segments, onEnd, onSpin }) => {
+const Wheel: React.FC<WheelProps> = ({ prizes, onEnd, onSpin }) => {
   const rotation = useSharedValue(0);
   const colorProgress = useSharedValue(0);
   const animatedCircleY = useSharedValue(120);
   const [randomIndex, setRandomIndex] = useState(
-    Math.floor(Math.random() * segments.length)
+    Math.floor(Math.random() * prizes.length)
   );
   const selectedSegmentAnimatedIndex = useSharedValue(randomIndex);
 
   const spinWheel = () => {
-    const newIndex = Math.floor(Math.random() * segments.length);
+    const newIndex = Math.floor(Math.random() * prizes.length);
     setRandomIndex(newIndex);
     selectedSegmentAnimatedIndex.value = newIndex;
     rotation.value = 0;
     const spins = 5;
     const fullSpins = 360 * spins;
-    const segmentAngle = 360 / segments.length;
+    const segmentAngle = 360 / prizes.length;
     const finalRotation = fullSpins - segmentAngle * newIndex;
 
     colorProgress.value = 0;
@@ -47,7 +46,7 @@ const Wheel: React.FC<WheelProps> = ({ segments, onEnd, onSpin }) => {
       (finished) => {
         if (finished) {
           colorProgress.value = withTiming(1);
-          runOnJS(onEnd)(segments[newIndex]);
+          runOnJS(onEnd)(newIndex);
         }
       }
     );
@@ -64,12 +63,11 @@ const Wheel: React.FC<WheelProps> = ({ segments, onEnd, onSpin }) => {
     transform: [{ rotate: `${rotation.value}deg` }],
   }));
 
-  const segmentData = generateWheelSegments(segments);
+  const segmentData = generateWheelSegments(prizes);
 
   return (
     <View style={styles.container}>
       <SpinControl animatedCircleY={animatedCircleY} onSpin={spinWheel} />
-      {/* Use Animated.View for rotation so reanimated never calls setNativeProps on SVG */}
       <Animated.View style={animatedWheelStyle}>
         <Svg width={SCREEN_WIDTH} height={SCREEN_WIDTH}>
           <G x={SCREEN_WIDTH / 2} y={SCREEN_WIDTH / 2}>
