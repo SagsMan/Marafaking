@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Spin and Win",
-    "slug": "spin-and-win",
+    "name": "Marafaking",
+    "slug": "marafaking",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "spin-and-win",
+    "scheme": "marafaking",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -14,9 +14,16 @@
       "backgroundColor": "#00153B"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.marafaking.app"
     },
-    "android": {},
+    "android": {
+      "package": "com.marafaking.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#00153B"
+      }
+    },
     "web": {
       "favicon": "./assets/images/icon.png"
     },
@@ -33,6 +40,11 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
     }
   }
 }
